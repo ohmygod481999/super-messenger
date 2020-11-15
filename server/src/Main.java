@@ -22,7 +22,8 @@ public class Main {
         System.out.println("Waiting for a client...");
         while (true) {
             socketConnection = serverSocket.accept();
-            Connection connection = new Connection(socketConnection, socketConnection.getInetAddress().toString());
+
+            Connection connection = new Connection(socketConnection);
 //            onlineConnections.add(connection);
             ConnectionThread connectionThread = new ConnectionThread(connection, groups);
             connectionThread.start();

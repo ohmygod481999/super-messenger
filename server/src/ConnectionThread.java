@@ -37,54 +37,74 @@ public class ConnectionThread extends Thread {
 
                 String outString = "";
 
-                if (readString.equals("list group")) {
-                    outString = groups.toString();
-                }
-                else if (readString.split(" ")[0].equals("join")) {
-                    String groupName = readString.split(" ")[1];
-                    Group targetGroup = getGroupByName(groupName);
-                    if (targetGroup != null) {
-                        targetGroup.joinGroup(this.connection);
-                        outString = "joined " + groupName;
+                if (!connection.isLogin()) {
+                    if (readString.split(" ")[0].equals("login")) {
+                        String id = readString.split(" ")[1];
+                        Boolean success = this.connection.login(id);
+                        if (success) {
+                            outString = "login success";
+                        }
+                        else {
+                            outString = "login fail";
+                        }
                     }
                     else {
-                        outString = "group " + groupName + " not found";
-                    }
-                }
-                else if (readString.split(" ")[0].equals("group")) {
-                    String groupName = readString.split(" ")[1];
-                    Group targetGroup = getGroupByName(groupName);
-
-                    if (targetGroup != null) {
-                        outString = targetGroup.getConnections().toString();
-                    }
-                    else outString = "Group: " + groupName + " not found";
-
-                }
-                else if (readString.split(" ")[0].equals("create")) {
-                    String groupName = readString.split(" ")[1];
-                    Group group = new Group(groupName);
-                    groups.add(group);
-                    outString = "created group " + groupName;
-                }
-                else if (readString.split(" ")[0].equals("msg")) {
-                    String groupName = readString.split(" ")[1];
-                    String msg = readString.split(" ")[2];
-
-                    Group targetGroup = getGroupByName(groupName);
-                    if (targetGroup != null) {
-                        targetGroup.sendMsg(this.connection, msg);
-                    }
-                    else {
-                        outString = "Group " + groupName + " not found";
+                        outString = "please login!";
                     }
                 }
                 else {
-                    outString = readString.toUpperCase();
+                    if (readString.equals("list group")) {
+                        outString = groups.toString();
+                    }
+                    else if (readString.split(" ")[0].equals("join")) {
+                        String groupName = readString.split(" ")[1];
+                        Group targetGroup = getGroupByName(groupName);
+                        if (targetGroup != null) {
+                            targetGroup.joinGroup(this.connection);
+                            outString = "joined " + groupName;
+                        }
+                        else {
+                            outString = "group " + groupName + " not found";
+                        }
+                    }
+                    else if (readString.split(" ")[0].equals("group")) {
+                        String groupName = readString.split(" ")[1];
+                        Group targetGroup = getGroupByName(groupName);
+
+                        if (targetGroup != null) {
+                            outString = targetGroup.getConnections().toString();
+                        }
+                        else outString = "Group: " + groupName + " not found";
+                    }
+                    else if (readString.split(" ")[0].equals("create")) {
+                        String groupName = readString.split(" ")[1];
+                        Group group = new Group(groupName);
+                        groups.add(group);
+                        outString = "created group " + groupName;
+                    }
+                    else if (readString.split(" ")[0].equals("msg")) {
+                        String groupName = readString.split(" ")[1];
+                        String msg = readString.split(" ")[2];
+
+                        Group targetGroup = getGroupByName(groupName);
+                        if (targetGroup != null) {
+                            targetGroup.sendMsg(this.connection, msg);
+                        }
+                        else {
+                            outString = "Group " + groupName + " not found";
+                        }
+                    }
+                    else {
+                        outString = readString.toUpperCase();
+                    }
                 }
+
 
                 connection.write(outString.getBytes());
                 if (readString.equals("quit")) {
+                    for (Group gr : this.groups.getGroups()) {
+                        gr.outGroup(this.connection);
+                    }
                     break;
                 }
             }
@@ -97,6 +117,13 @@ public class ConnectionThread extends Thread {
             }
             catch (IOException e) {
                 e.printStackTrace();
+            }
+            catch (Exception e) {
+                try {
+                    connection.write(new String("Error: invalid command").getBytes());
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
             }
         }
     }

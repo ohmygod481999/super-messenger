@@ -9,15 +9,27 @@ public class Connection {
     private DataOutputStream dataOutputStream;
     private DataInputStream dataInputStream;
 
-    public Connection(Socket socketConnection, String id) throws IOException {
+    public Connection(Socket socketConnection) throws IOException {
         this.socketConnection = socketConnection;
-        this.id = id;
+        this.id = null;
         this.dataInputStream = new DataInputStream(socketConnection.getInputStream());
         this.dataOutputStream = new DataOutputStream(socketConnection.getOutputStream());
     }
 
     public String getIpAddress () {
         return this.socketConnection.getInetAddress().toString();
+    }
+
+    public Boolean login (String id) {
+        if (!isLogin()) {
+            this.id = id;
+            return true;
+        }
+        return false;
+    }
+
+    public Boolean isLogin () {
+        return this.id != null;
     }
 
     public String getId() {

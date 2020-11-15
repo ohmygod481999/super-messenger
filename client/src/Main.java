@@ -15,6 +15,8 @@ public class Main {
         DataInputStream dataInputStream = new DataInputStream(inputStream);
         DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
 
+        Runtime.getRuntime().addShutdownHook(new ShutdownThread(connection, dataOutputStream));
+
         ReadThread readThread = new ReadThread(connection);
         readThread.start();
 
@@ -25,6 +27,7 @@ public class Main {
             dataOutputStream.write(stringOut.getBytes());
 
             if (stringOut.equals("quit")) {
+                readThread.stop();
                 break;
             }
         }
