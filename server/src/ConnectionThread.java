@@ -42,56 +42,57 @@ public class ConnectionThread extends Thread {
                         String id = readString.split(" ")[1];
                         Boolean success = this.connection.login(id);
                         if (success) {
-                            outString = "login success";
+                            outString = "210 OK";
                         }
                         else {
-                            outString = "login fail";
+                            outString = "410 ERROR";
                         }
                     }
                     else {
-                        outString = "please login!";
+                        outString = "411 YOU HAVEN'T LOGIN YET";
                     }
                 }
                 else {
-                    if (readString.equals("list group")) {
-                        outString = groups.toString();
+                    if (readString.equals("groups")) {
+                        outString = "241 " + groups.toString();
                     }
                     else if (readString.split(" ")[0].equals("join")) {
                         String groupName = readString.split(" ")[1];
                         Group targetGroup = getGroupByName(groupName);
                         if (targetGroup != null) {
                             targetGroup.joinGroup(this.connection);
-                            outString = "joined " + groupName;
+                            outString = "231 OK";
                         }
                         else {
-                            outString = "group " + groupName + " not found";
+                            outString = "431 " + groupName + "not exists";
                         }
                     }
-                    else if (readString.split(" ")[0].equals("group")) {
+                    else if (readString.split(" ")[0].equals("users")) {
                         String groupName = readString.split(" ")[1];
                         Group targetGroup = getGroupByName(groupName);
 
                         if (targetGroup != null) {
-                            outString = targetGroup.getConnections().toString();
+                            outString = "243 " + targetGroup.getConnections().toString();
                         }
-                        else outString = "Group: " + groupName + " not found";
+                        else outString = "440 " + groupName + " is not exists";
                     }
                     else if (readString.split(" ")[0].equals("create")) {
                         String groupName = readString.split(" ")[1];
                         Group group = new Group(groupName);
                         groups.add(group);
-                        outString = "created group " + groupName;
+                        outString = "230 OK";
                     }
-                    else if (readString.split(" ")[0].equals("msg")) {
+                    else if (readString.split(" ")[0].equals("gtext")) {
                         String groupName = readString.split(" ")[1];
                         String msg = readString.split(" ")[2];
 
                         Group targetGroup = getGroupByName(groupName);
                         if (targetGroup != null) {
                             targetGroup.sendMsg(this.connection, msg);
+                            outString = "233 OK";
                         }
                         else {
-                            outString = "Group " + groupName + " not found";
+                            outString = "433 " + groupName + " not found";
                         }
                     }
                     else {

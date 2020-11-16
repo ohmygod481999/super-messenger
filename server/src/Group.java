@@ -20,7 +20,7 @@ public class Group {
 
     public void sendMsg (Connection from, String msg) throws IOException {
         for (Connection connection : this.connections) {
-            String out = from.getId() + " " + msg;
+            String out = "120 " + from.getId() + " " + msg;
             connection.write(out.getBytes());
         }
     }
@@ -31,5 +31,10 @@ public class Group {
 
     public String getName() {
         return name;
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
     }
 }

@@ -22,12 +22,12 @@ public class Groups {
     @Override
     public String toString() {
         String str = "";
-        str += "Groups{";
-        for (Group group: groups) {
-            str += group.getName();
-            str += ", ";
+        for (int i=0;i<this.groups.size();i++) {
+            str += this.groups.get(i).getName();
+            if (i != this.groups.size() - 1) {
+                str += "/";
+            }
         }
-        str += "}";
         return str;
     }
 }
