@@ -20,12 +20,8 @@ public class Connection {
         return this.socketConnection.getInetAddress().toString();
     }
 
-    public Boolean login (String id) {
-        if (!isLogin()) {
-            this.id = id;
-            return true;
-        }
-        return false;
+    public void login (String id) {
+        this.id = id;
     }
 
     public Boolean isLogin () {
@@ -44,8 +40,8 @@ public class Connection {
         return this.dataInputStream;
     }
 
-    public void write (byte[] buffer) throws IOException {
-        this.dataOutputStream.write(buffer);
+    public void write (String string) throws IOException {
+        this.dataOutputStream.write(string.getBytes());
     }
 
     public int read (byte[] buffer) throws IOException {

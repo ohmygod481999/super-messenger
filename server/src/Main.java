@@ -15,17 +15,13 @@ public class Main {
         ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
         Socket socketConnection = null;
 
-//        ArrayList<Connection> onlineConnections = new ArrayList<Connection>();
-        Groups groups = new Groups();
-        groups.add(new Group("group1"));
-
         System.out.println("Waiting for a client...");
         while (true) {
             socketConnection = serverSocket.accept();
 
             Connection connection = new Connection(socketConnection);
 //            onlineConnections.add(connection);
-            ConnectionThread connectionThread = new ConnectionThread(connection, groups);
+            ConnectionThread connectionThread = new ConnectionThread(connection);
             connectionThread.start();
         }
     }
