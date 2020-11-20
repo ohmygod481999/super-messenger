@@ -140,7 +140,7 @@ public class ConnectionThread extends Thread {
             connection.write("433 You have not joined " + group.getName() + " yet");
             return;
         }
-        group.sendMsg("133 [" + connection.getId() + "] " + matcher.group(2));
+        group.sendMsg("133 [" + group.getName() + "] [" + connection.getId() + "] " + matcher.group(2));
         connection.write("233 Ok");
     }
 
@@ -160,7 +160,7 @@ public class ConnectionThread extends Thread {
             return;
         }
         group.outGroup(connection);
-        group.sendMsg("132 [" + connection.getId() + "] has left");
+        group.sendMsg("132 [" + group.getName() + "] [" + connection.getId() + "] has left");
         connection.write("232 Ok");
     }
 
@@ -181,7 +181,7 @@ public class ConnectionThread extends Thread {
         }
         connection.write("231 Ok");
         group.joinGroup(connection);
-        group.sendMsg("131 [" + connection.getId() + "] has joined");
+        group.sendMsg("131 [" + group.getName() + "] [" + connection.getId() + "] has joined");
     }
 
     // pattern: Create [(1)]
