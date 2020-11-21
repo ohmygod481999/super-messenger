@@ -16,15 +16,15 @@ public class Connection {
         this.dataOutputStream = new DataOutputStream(socketConnection.getOutputStream());
     }
 
-    public String getIpAddress () {
+    public String getIpAddress() {
         return this.socketConnection.getInetAddress().toString();
     }
 
-    public void login (String id) {
+    public void login(String id) {
         this.id = id;
     }
 
-    public Boolean isLogin () {
+    public Boolean isLogin() {
         return this.id != null;
     }
 
@@ -32,19 +32,19 @@ public class Connection {
         return id;
     }
 
-    public DataOutputStream getDataOutputStream () {
+    public DataOutputStream getDataOutputStream() {
         return this.dataOutputStream;
     }
 
-    public DataInputStream getDataInputStream () {
+    public DataInputStream getDataInputStream() {
         return this.dataInputStream;
     }
 
-    public void write (String string) throws IOException {
+    public void write(String string) throws IOException {
         this.dataOutputStream.write(string.getBytes());
     }
 
-    public int read (byte[] buffer) throws IOException {
+    public int read(byte[] buffer) throws IOException {
         return this.dataInputStream.read(buffer);
     }
 

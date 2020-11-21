@@ -12,15 +12,15 @@ public class Group {
         this.connections = new ConcurrentHashMap<>();
     }
 
-    public void joinGroup (Connection connection) {
+    public void joinGroup(Connection connection) {
         this.connections.put(connection.getId(), connection);
     }
 
-    public void outGroup (Connection connection) {
+    public void outGroup(Connection connection) {
         this.connections.remove(connection.getId());
     }
 
-    public void sendMsg (String msg) throws IOException {
+    public void sendMsg(String msg) throws IOException {
         for (Connection connection : this.connections.values()) {
             connection.write(msg);
         }
@@ -30,7 +30,7 @@ public class Group {
         return connections.get(id);
     }
 
-    public Collection<Connection> getConnections () {
+    public Collection<Connection> getConnections() {
         return this.connections.values();
     }
 

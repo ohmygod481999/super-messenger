@@ -7,10 +7,12 @@ import java.net.Socket;
 public class ShutdownThread extends Thread {
     private Socket connection;
     private DataOutputStream dataOutputStream;
+
     public ShutdownThread(Socket connection, DataOutputStream dataOutputStream) {
         this.connection = connection;
         this.dataOutputStream = dataOutputStream;
     }
+
     @Override
     public void run() {
         try {

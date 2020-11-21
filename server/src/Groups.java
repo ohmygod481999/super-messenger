@@ -15,14 +15,14 @@ public class Groups {
         this.groups.add(group);
     }
 
-    public void remove(Group group){
+    public void remove(Group group) {
         this.groups.remove(group);
     }
 
     @Override
     public String toString() {
         String str = "";
-        for (int i=0;i<this.groups.size();i++) {
+        for (int i = 0; i < this.groups.size(); i++) {
             str += this.groups.get(i).getName();
             if (i != this.groups.size() - 1) {
                 str += "/";

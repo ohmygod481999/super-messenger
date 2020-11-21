@@ -14,7 +14,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author admin
  */
 public class Main {
@@ -28,7 +27,7 @@ public class Main {
     public static LoginForm loginForm = new LoginForm();
     public static GroupPanel groupPanel = new GroupPanel();
     public static Map<String, GroupChat> groupChats = new HashMap<>();
-    
+
     public static void init() throws IOException {
         connection = new Socket(HOST_NAME, SERVER_PORT);
 
@@ -40,7 +39,7 @@ public class Main {
         ReadThread readThread = new ReadThread(connection);
         readThread.start();
     }
-    
+
     public static String read() {
         byte[] buffer = new byte[1024];
         DataInputStream dataInputStream = new DataInputStream(inputStream);
@@ -53,7 +52,7 @@ public class Main {
         System.out.println(s);
         return s;
     }
-    
+
     public static void write(String stringOut) {
         stringOut = stringOut.trim();
         DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
@@ -63,41 +62,41 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     public static void login(String u) {
         username = u;
         write("Login [" + u + "]");
     }
-    
+
     public static void getGroups() {
         write("Groups");
     }
-    
+
     public static void createGroup(String g) {
         group = g;
         write("Create [" + g + "]");
     }
-    
+
     public static void joinGroup(String g) {
         group = g;
         write("Join [" + g + "]");
     }
-    
+
     public static void openGroup(String g) {
         if (groupChats.get(g) == null) {
             groupChats.put(g, new GroupChat(g));
         }
         groupChats.get(g).setVisible(true);
     }
-    
+
     public static void leaveGroup(String g) {
         write("Leave [" + g + "]");
     }
-    
+
     public static void chatGroup(String g, String m) {
         write("GText [" + g + "] " + m);
     }
-    
+
     public static void toGroup(int c, String m) {
         int pos = m.indexOf("]");
         String g = m.substring(1, pos);
@@ -109,7 +108,7 @@ public class Main {
             groupChats.get(g).updateChat(c, u, m);
         }
     }
-    
+
     public static void logout() {
         write("Logout");
     }
@@ -123,5 +122,5 @@ public class Main {
         }
         loginForm.setVisible(true);
     }
-    
+
 }

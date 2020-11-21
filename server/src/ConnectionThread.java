@@ -8,7 +8,7 @@ public class ConnectionThread extends Thread {
     private Connection connection;
     private Matcher matcher;
 
-    public ConnectionThread (Connection connection) {
+    public ConnectionThread(Connection connection) {
         this.connection = connection;
     }
 
@@ -53,18 +53,15 @@ public class ConnectionThread extends Thread {
                 } else {
                     connection.write("400 Invalid command");
                 }
-            }
-            catch (SocketException e) {
+            } catch (SocketException e) {
                 try {
                     this.connection.close();
                 } catch (IOException ioException) {
                     ioException.printStackTrace();
                 }
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 try {
                     connection.write("Error: invalid command");
                 } catch (IOException ioException) {
