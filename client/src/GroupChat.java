@@ -26,7 +26,7 @@ public class GroupChat extends javax.swing.JFrame {
         initComponents();
     }
 
-    //String group
+
     private String group;
 
     public GroupChat(String g) {
