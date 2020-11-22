@@ -44,6 +44,7 @@ public class WriteThread extends Thread {
     public void addWriter(Writer writer) {
         synchronized (this) {
             writers.add(writer);
+            notify();
         }
     }
 }
