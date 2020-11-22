@@ -5,6 +5,7 @@ public class Server {
 
     private static final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Group> groups = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Object> fileLocks = new ConcurrentHashMap<>();
 
     public static Connection getConnection(String id) {
         return connections.get(id);
@@ -45,5 +46,11 @@ public class Server {
         groups.put(group.getName(), group);
         return true;
     }
+
+    public static synchronized Object getFileLock(String name) {
+        fileLocks.putIfAbsent(name, new Object());
+        return fileLocks.get(name);
+    }
+
 }
 

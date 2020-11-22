@@ -1,5 +1,3 @@
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,9 +18,9 @@ public class Group {
         this.connections.remove(connection.getId());
     }
 
-    public void sendMsg(String msg) throws IOException {
-        for (Connection connection : this.connections.values()) {
-            connection.write(msg);
+    public void addWriter(Writer writer) {
+        for (Connection connection : connections.values()) {
+            connection.addWriter(writer);
         }
     }
 
