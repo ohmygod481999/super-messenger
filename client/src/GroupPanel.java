@@ -103,8 +103,10 @@ public class GroupPanel extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void CreateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CreateButtonActionPerformed
-        GroupForm gp = new GroupForm(this, true);
-        gp.setVisible(true);
+        String s = (String)javax.swing.JOptionPane.showInputDialog(this, "Group name: ", "Create group", javax.swing.JOptionPane.PLAIN_MESSAGE);
+        if ((s != null) && (s.length() > 0)) {
+            Main.createGroup(s);
+        }
     }//GEN-LAST:event_CreateButtonActionPerformed
 
     private void LogoutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_LogoutButtonActionPerformed

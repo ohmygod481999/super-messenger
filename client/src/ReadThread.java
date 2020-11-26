@@ -1,4 +1,6 @@
 import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -17,7 +19,7 @@ public class ReadThread extends Thread {
         try {
             while (true) {
                 byte[] buffer = new byte[1024];
-                int n = this.dataInputStream.read(buffer);
+                int n = dataInputStream.read(buffer);
                 String stringIn = new String(buffer, StandardCharsets.UTF_8).trim();
                 System.out.println("Server: " + stringIn);
                 if (stringIn.length() < 3) continue;
@@ -53,6 +55,22 @@ public class ReadThread extends Thread {
                     Main.getGroups();
                 } else if (code == 131 || code == 132 || code == 133 || code == 134) {
                     Main.toGroup(code, message);
+                } else if (code == 235) {
+                    File file = new File(Main.file);
+                    if (!file.createNewFile()) {
+                        System.out.println("Override " + Main.file);
+                    }
+                    int size = Integer.parseInt(message);
+                    FileOutputStream stream = new FileOutputStream(file);
+                    while (size > 0) {
+                        n = dataInputStream.read(buffer);
+                        stream.write(buffer, 0, n);
+                        size -= n;
+                    }
+                    stream.close();
+                    javax.swing.JOptionPane.showMessageDialog(null, "Download complete!");
+                } else if (code == 435) {
+                    javax.swing.JOptionPane.showMessageDialog(null, message);
                 } else if (code == 241) {
                     Main.groupPanel.setGroups(message.split("/"));
                 }

@@ -23,7 +23,7 @@ public class Main {
     public static Socket connection;
     public static InputStream inputStream;
     public static OutputStream outputStream;
-    public static String username, group;
+    public static String username, group, file;
     public static LoginForm loginForm = new LoginForm();
     public static GroupPanel groupPanel = new GroupPanel();
     public static Map<String, GroupChat> groupChats = new HashMap<>();
@@ -34,7 +34,7 @@ public class Main {
         inputStream = connection.getInputStream();
         outputStream = connection.getOutputStream();
 
-        //Runtime.getRuntime().addShutdownHook(new ShutdownThread(connection, dataOutputStream));
+        Runtime.getRuntime().addShutdownHook(new ShutdownThread(connection, outputStream));
 
         ReadThread readThread = new ReadThread(connection);
         readThread.start();
@@ -55,6 +55,7 @@ public class Main {
 
     public static void write(String stringOut) {
         stringOut = stringOut.trim();
+        System.out.println(stringOut);
         DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
         try {
             dataOutputStream.write(stringOut.getBytes());
@@ -91,6 +92,7 @@ public class Main {
 
     public static void leaveGroup(String g) {
         write("Leave [" + g + "]");
+        groupChats.remove(group);
     }
 
     public static void chatGroup(String g, String m) {
@@ -107,6 +109,36 @@ public class Main {
         if (groupChats.get(g) != null) {
             groupChats.get(g).updateChat(c, u, m);
         }
+    }
+    
+    public static void fileGroup(String g, File file) {
+        FileInputStream stream = null;
+        try {
+            write("GFile [" + g + "] [" + file.getName() + "] " + file.length());
+            stream = new FileInputStream(file);
+            byte[] buffer = new byte[1024];
+            DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+            int n = 0;
+            while ((n = stream.read(buffer)) > 0) {
+                dataOutputStream.write(buffer, 0, n);
+            }
+            stream.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                stream.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    public static void downloadGroup(String g, String f) {
+        file = f;
+        write("GGet [" + g + "] [" + f + "]");
     }
 
     public static void logout() {
