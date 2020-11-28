@@ -1,6 +1,8 @@
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.regex.Matcher;
 
 public class ReadThread extends Thread {
@@ -30,8 +32,8 @@ public class ReadThread extends Thread {
                     onLogout();
                 } else if ((matcher = CommandPattern.UTEXT.matcher(readString)).matches()) {
                     onUText();
-                } else if ((matcher = CommandPattern.UFILE.matcher(readString)).matches()) {
-                    onUFile();
+                } else if ((matcher = CommandPattern.UPUT.matcher(readString)).matches()) {
+                    onUPut();
                 } else if ((matcher = CommandPattern.UGET.matcher(readString)).matches()) {
                     onUGet();
                 } else if ((matcher = CommandPattern.CREATE.matcher(readString)).matches()) {
@@ -42,14 +44,18 @@ public class ReadThread extends Thread {
                     onLeave();
                 } else if ((matcher = CommandPattern.GTEXT.matcher(readString)).matches()) {
                     onGText();
-                } else if ((matcher = CommandPattern.GFILE.matcher(readString)).matches()) {
-                    onGFile();
+                } else if ((matcher = CommandPattern.GPUT.matcher(readString)).matches()) {
+                    onGPut();
                 } else if ((matcher = CommandPattern.GGET.matcher(readString)).matches()) {
                     onGGet();
                 } else if ((matcher = CommandPattern.USERS.matcher(readString)).matches()) {
                     onUsers();
                 } else if ((matcher = CommandPattern.GROUPS.matcher(readString)).matches()) {
                     onGroups();
+                } else if ((matcher = CommandPattern.UFILE.matcher(readString)).matches()) {
+                    onUFile();
+                } else if ((matcher = CommandPattern.GFILE.matcher(readString)).matches()) {
+                    onGFile();
                 } else {
                     connection.addWriter(new Writer.Text("400 Invalid command"));
                 }
@@ -62,6 +68,60 @@ public class ReadThread extends Thread {
             }
         }
         System.out.println("Connection id: " + connection.getId() + " - read thread stopped");
+    }
+
+    // pattern: GFile (1)
+    private void onGFile() {
+        if (!connection.isLogin()) {
+            connection.addWriter(new Writer.Text("443 You haven't logged in yet"));
+            return;
+        }
+        Group group = Server.getGroup(matcher.group(1));
+        if (group == null) {
+            connection.addWriter(new Writer.Text("443 " + matcher.group(1) + " not exists"));
+            return;
+        }
+        File folder = new File(getDirectoryName(group));
+        StringBuilder builder = new StringBuilder("243 ");
+        if (folder.exists()) {
+            File[] files = folder.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    builder.append("/").append(file.getName());
+                }
+            }
+            if (builder.indexOf("/") != -1) {
+                builder.deleteCharAt(4);
+            }
+        }
+        connection.addWriter(new Writer.Text(builder.toString().trim()));
+    }
+
+    // pattern: UFile (1)
+    private void onUFile() {
+        if (!connection.isLogin()) {
+            connection.addWriter(new Writer.Text("442 You haven't logged in yet"));
+            return;
+        }
+        Connection other = Server.getConnection(matcher.group(1));
+        if (other == null) {
+            connection.addWriter(new Writer.Text("442 " + matcher.group(1) + " not exists"));
+            return;
+        }
+        File folder = new File(getDirectoryName(other));
+        StringBuilder builder = new StringBuilder("242 ");
+        if (folder.exists()) {
+            File[] files = folder.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    builder.append("/").append(file.getName());
+                }
+            }
+            if (builder.indexOf("/") != -1) {
+                builder.deleteCharAt(4);
+            }
+        }
+        connection.addWriter(new Writer.Text(builder.toString().trim()));
     }
 
     // pattern: Groups
@@ -122,17 +182,18 @@ public class ReadThread extends Thread {
             connection.addWriter(new Writer.Text("435 You have not joined " + group.getName() + " yet"));
             return;
         }
-        String name = matcher.group(1) + "_" + matcher.group(2);
-        File file = new File(name);
+        String directory = getDirectoryName(group);
+        String name = matcher.group(2);
+        File file = new File(directory, name);
         if (!file.exists()) {
             connection.addWriter(new Writer.Text("435 " + matcher.group(2) + " not exists"));
             return;
         }
-        connection.addWriter(new Writer.File("235", name));
+        connection.addWriter(new Writer.File("235", directory + "/" + name));
     }
 
-    // pattern: GFile [(1)] [(2)] (3)
-    private void onGFile() {
+    // pattern: GPut [(1)] [(2)] (3)
+    private void onGPut() {
         if (!connection.isLogin()) {
             connection.addWriter(new Writer.Text("434 You haven't logged in yet"));
             return;
@@ -146,24 +207,23 @@ public class ReadThread extends Thread {
             connection.addWriter(new Writer.Text("434 You have not joined " + group.getName() + " yet"));
             return;
         }
-        String name = group.getName() + "_" + matcher.group(2);
-        synchronized (Server.getFileLock(name)) {
+        String directory = getDirectoryName(group);
+        if (!createDirectory(directory)) {
+            connection.addWriter(new Writer.Text("434 Error"));
+            return;
+        }
+        String name = createFile(directory, matcher.group(2));
+        if (name == null) {
+            connection.addWriter(new Writer.Text("434 Error"));
+            return;
+        }
+        synchronized (Server.getFileLock(directory + name)) {
             try {
-                File file = new File(name);
-                if (!file.createNewFile()) {
-                    System.out.println("Override " + name);
-                }
+                File file = new File(directory, name);
                 int size = Integer.parseInt(matcher.group(3));
-                FileOutputStream stream = new FileOutputStream(file);
-                byte[] buffer = new byte[1024];
-                while (size > 0) {
-                    int n = connection.getDataInputStream().read(buffer);
-                    stream.write(buffer, 0, n);
-                    size -= n;
-                }
-                stream.close();
+                readBufferAndWriteToFile(file, size);
                 connection.addWriter(new Writer.Text("234 Ok"));
-                group.addWriter(new Writer.Text("134 [" + group.getName() + "] [" + connection.getId() + "] had uploaded " + matcher.group(2)));
+                group.addWriter(new Writer.Text("134 [" + group.getName() + "] [" + connection.getId() + "] had uploaded " + name));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -259,22 +319,18 @@ public class ReadThread extends Thread {
             connection.addWriter(new Writer.Text("422 " + matcher.group(1) + " not exists"));
             return;
         }
+        String directory = getDirectoryName(sender);
         String name = matcher.group(2);
-        if (connection.getId().compareTo(sender.getId()) > 0) {
-            name = connection.getId() + "_" + sender.getId() + "_" + name;
-        } else {
-            name = sender.getId() + "_" + connection.getId() + "_" + name;
-        }
-        File file = new File(name);
+        File file = new File(directory, name);
         if (!file.exists()) {
             connection.addWriter(new Writer.Text("422 " + matcher.group(2) + " not exists"));
             return;
         }
-        connection.addWriter(new Writer.File("222", name));
+        connection.addWriter(new Writer.File("222", directory + "/" + name));
     }
 
-    // pattern: UFile [(1)] [(2)] (3)
-    private void onUFile() {
+    // pattern: UPut [(1)] [(2)] (3)
+    private void onUPut() {
         if (!connection.isLogin()) {
             connection.addWriter(new Writer.Text("421 You haven't logged in yet"));
             return;
@@ -284,29 +340,23 @@ public class ReadThread extends Thread {
             connection.addWriter(new Writer.Text("421 " + matcher.group(1) + " not exists"));
             return;
         }
-        String name = matcher.group(2);
-        if (connection.getId().compareTo(receiver.getId()) > 0) {
-            name = connection.getId() + "_" + receiver.getId() + "_" + name;
-        } else {
-            name = receiver.getId() + "_" + connection.getId() + "_" + name;
+        String directory = getDirectoryName(receiver);
+        if (!createDirectory(directory)) {
+            connection.addWriter(new Writer.Text("421 Error"));
+            return;
         }
-        synchronized (Server.getFileLock(name)) {
+        String name = createFile(directory, matcher.group(2));
+        if (name == null) {
+            connection.addWriter(new Writer.Text("421 Error"));
+            return;
+        }
+        synchronized (Server.getFileLock(directory + name)) {
             try {
-                File file = new File(name);
-                if (!file.createNewFile()) {
-                    System.out.println("Override " + name);
-                }
+                File file = new File(directory, name);
                 int size = Integer.parseInt(matcher.group(3));
-                FileOutputStream stream = new FileOutputStream(file);
-                byte[] buffer = new byte[1024];
-                while (size > 0) {
-                    int n = connection.getDataInputStream().read(buffer);
-                    stream.write(buffer, 0, n);
-                    size -= n;
-                }
-                stream.close();
+                readBufferAndWriteToFile(file, size);
                 connection.addWriter(new Writer.Text("221 Ok"));
-                receiver.addWriter(new Writer.Text("121 [" + connection.getId() + "] had uploaded " + matcher.group(2)));
+                receiver.addWriter(new Writer.Text("121 [" + connection.getId() + "] had uploaded " + name));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -360,5 +410,70 @@ public class ReadThread extends Thread {
         }
         connection.login(null);
         connection.addWriter(new Writer.Text("410 Error"));
+    }
+
+    private String getDirectoryName(Connection connection) {
+        if (connection.getId().compareTo(this.connection.getId()) > 0) {
+            return "Files/" + connection.getId() + "_" + this.connection.getId();
+        } else {
+            return "Files/" + this.connection.getId() + "_" + connection.getId();
+        }
+    }
+
+    private void readBufferAndWriteToFile(File output, int size) throws Exception {
+        FileOutputStream stream = new FileOutputStream(output);
+        byte[] buffer = new byte[1024];
+        while (size > 0) {
+            int n = connection.getDataInputStream().read(buffer);
+            stream.write(buffer, 0, n);
+            size -= n;
+        }
+        stream.close();
+    }
+
+    private String getDirectoryName(Group group) {
+        return "Files/" + group.getName();
+    }
+
+    private static synchronized boolean createDirectory(String name) {
+        Path path = Paths.get(name);
+        if (Files.exists(path)) {
+            return true;
+        }
+        try {
+            Files.createDirectories(path);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private static synchronized String createFile(String folder, String name) {
+        try {
+            File file = new File(folder, name);
+            if (!file.exists()) {
+                file.createNewFile();
+                return name;
+            } else {
+                String extension = "";
+                int index = name.lastIndexOf(".");
+                if (index != -1) {
+                    extension = name.substring(index);
+                    name = name.substring(0, index);
+                }
+                index = 1;
+                while (true) {
+                    file = new File(folder, name + "(" + index + ")" + extension);
+                    if (!file.exists()) {
+                        file.createNewFile();
+                        return name + "(" + index + ")" + extension;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

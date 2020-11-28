@@ -55,5 +55,6 @@ public class Connection {
         this.socketConnection.close();
         readThread.interrupt();
         writeThread.interrupt();
+        Server.removeConnection(id);
     }
 }
