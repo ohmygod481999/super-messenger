@@ -31,8 +31,9 @@ public class GroupChat extends javax.swing.JFrame {
     public GroupChat(String g) {
         initComponents();
         group = g;
-        setTitle(group);
-        ChatPane.setEditable(false);
+        setTitle("Group: " + group);
+        TextPane.setEditable(false);
+        TextPane.setBackground(Color.white);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             @Override
@@ -41,6 +42,8 @@ public class GroupChat extends javax.swing.JFrame {
                 dispose();
             }
         });
+        Main.newLocation();
+        setLocation(Main.posX, Main.posY);
     }
 
     /**
@@ -56,11 +59,17 @@ public class GroupChat extends javax.swing.JFrame {
         SendButton = new javax.swing.JButton();
         LeaveButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
-        ChatPane = new javax.swing.JTextPane();
+        TextPane = new javax.swing.JTextPane();
         UploadButton = new javax.swing.JButton();
         DownloadButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        TextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                TextFieldActionPerformed(evt);
+            }
+        });
 
         SendButton.setText("Send");
         SendButton.addActionListener(new java.awt.event.ActionListener() {
@@ -76,7 +85,7 @@ public class GroupChat extends javax.swing.JFrame {
             }
         });
 
-        jScrollPane1.setViewportView(ChatPane);
+        jScrollPane1.setViewportView(TextPane);
 
         UploadButton.setText("Upload");
         UploadButton.addActionListener(new java.awt.event.ActionListener() {
@@ -98,15 +107,17 @@ public class GroupChat extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
-                    .addComponent(TextField))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(SendButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(TextField, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(SendButton))
+                    .addComponent(jScrollPane1))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(DownloadButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(LeaveButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(UploadButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(DownloadButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE))
+                    .addComponent(UploadButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -116,11 +127,12 @@ public class GroupChat extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(LeaveButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(DownloadButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(UploadButton))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE))
+                        .addComponent(UploadButton)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 210, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(SendButton)
@@ -137,8 +149,11 @@ public class GroupChat extends javax.swing.JFrame {
     }//GEN-LAST:event_LeaveButtonActionPerformed
 
     private void SendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_SendButtonActionPerformed
-        Main.chatGroup(group, TextField.getText());
-        TextField.setText("");
+        String s = TextField.getText();
+        if (!s.equals("")) {
+            Main.chatGroup(group, s);
+            TextField.setText("");
+        }
     }//GEN-LAST:event_SendButtonActionPerformed
 
     private void UploadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_UploadButtonActionPerformed
@@ -150,24 +165,34 @@ public class GroupChat extends javax.swing.JFrame {
     }//GEN-LAST:event_UploadButtonActionPerformed
 
     private void DownloadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DownloadButtonActionPerformed
-        String s = (String)javax.swing.JOptionPane.showInputDialog(this, "File name: ", "Download file", javax.swing.JOptionPane.PLAIN_MESSAGE);
-        if ((s != null) && (s.length() > 0)) {
-            Main.downloadGroup(group, s);
-        }
+        Main.filelistGroup(group);
     }//GEN-LAST:event_DownloadButtonActionPerformed
+
+    private void TextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TextFieldActionPerformed
+        String s = TextField.getText();
+        if (!s.equals("")) {
+            TextField.setText("");
+            Main.chatGroup(group, s);
+        }
+    }//GEN-LAST:event_TextFieldActionPerformed
 
     public void updateChat(int c, String u, String m) {
         try {
-            SimpleAttributeSet blue = new SimpleAttributeSet();
-            StyleConstants.setForeground(blue, Color.blue);
-            Document doc = ChatPane.getDocument();
+            SimpleAttributeSet color = new SimpleAttributeSet();
+            if (u.equals(Main.username))
+                StyleConstants.setForeground(color, Color.red);
+            else
+                StyleConstants.setForeground(color, Color.blue);
+            Document doc = TextPane.getDocument();
             if (c == 133) {
-                doc.insertString(doc.getLength(), u + ": ", blue);
+                doc.insertString(doc.getLength(), u + ": ", color);
                 doc.insertString(doc.getLength(), m + "\n", null);
             } else {
-                doc.insertString(doc.getLength(), u + " " + m + "\n", blue);
+                doc.insertString(doc.getLength(), u + " " + m + "\n", color);
             }
-            ChatPane.setCaretPosition(ChatPane.getDocument().getLength());
+            TextPane.setCaretPosition(TextPane.getDocument().getLength());
+            toFront();
+            java.awt.Toolkit.getDefaultToolkit().beep();
         } catch (BadLocationException ex) {
             Logger.getLogger(GroupChat.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -199,6 +224,9 @@ public class GroupChat extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(GroupChat.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
+        //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -209,11 +237,11 @@ public class GroupChat extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextPane ChatPane;
     private javax.swing.JButton DownloadButton;
     private javax.swing.JButton LeaveButton;
     private javax.swing.JButton SendButton;
     private javax.swing.JTextField TextField;
+    private javax.swing.JTextPane TextPane;
     private javax.swing.JButton UploadButton;
     private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables

@@ -147,7 +147,7 @@ public class ReadThread extends Thread {
             return;
         }
         StringBuilder builder = new StringBuilder("240 ");
-        if (matcher.groupCount() < 2) {
+        if (matcher.group(2) == null) {
             for (Connection connection : Server.getConnections()) {
                 builder.append("/").append(connection.getId());
             }

@@ -28,34 +28,30 @@ public class ReadThread extends Thread {
                 if (stringIn.length() > 4) {
                     message = stringIn.substring(4);
                 }
-                if (message == "You haven't log in yet") {
+                if (message.equals("You haven't log in yet")) {
                     Main.loginForm.setVisible(true);
                     Main.groupPanel.setVisible(false);
                     javax.swing.JOptionPane.showMessageDialog(Main.loginForm, message);
+                } else if (message.equals("You have already joined")) {
+                    Main.openGroup(Main.group);
                 } else if (code == 210) {
                     Main.loginForm.setVisible(false);
                     Main.groupPanel.setVisible(true);
+                    Main.getUsers();
                     Main.getGroups();
-                } else if (code == 410) {
-                    javax.swing.JOptionPane.showMessageDialog(Main.loginForm, message);
                 } else if (code == 211) {
                     Main.loginForm.setVisible(true);
                     Main.groupPanel.setVisible(false);
-                } else if (code == 411) {
-                    javax.swing.JOptionPane.showMessageDialog(Main.groupPanel, message);
+                } else if (code == 120 || code == 121) {
+                    Main.toUser(code, message);
                 } else if (code == 230) {
                     Main.getGroups();
                     Main.openGroup(Main.group);
-                } else if (code == 430) {
-                    javax.swing.JOptionPane.showMessageDialog(Main.groupPanel, message);
                 } else if (code == 231) {
                     Main.openGroup(Main.group);
-                } else if (code == 431) {
-                    javax.swing.JOptionPane.showMessageDialog(Main.groupPanel, message);
-                    Main.getGroups();
                 } else if (code == 131 || code == 132 || code == 133 || code == 134) {
                     Main.toGroup(code, message);
-                } else if (code == 235) {
+                } else if (code == 235 || code == 222) {
                     File file = new File(Main.file);
                     if (!file.createNewFile()) {
                         System.out.println("Override " + Main.file);
@@ -69,10 +65,18 @@ public class ReadThread extends Thread {
                     }
                     stream.close();
                     javax.swing.JOptionPane.showMessageDialog(null, "Download complete!");
-                } else if (code == 435) {
+                } else if (code / 100 == 4) {
                     javax.swing.JOptionPane.showMessageDialog(null, message);
                 } else if (code == 241) {
                     Main.groupPanel.setGroups(message.split("/"));
+                } else if (code == 240) {
+                    Main.groupPanel.setUsers(message.split("/"));
+                } else if (code == 242) {
+                    DownloadDialog dd = new DownloadDialog(null, false, Main.user, null, message.split("/"));
+                    dd.setVisible(true);
+                } else if (code == 243) {
+                    DownloadDialog dd = new DownloadDialog(null, false, null, Main.group, message.split("/"));
+                    dd.setVisible(true);
                 }
             }
         } catch (IOException e) {

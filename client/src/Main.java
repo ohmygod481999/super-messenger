@@ -4,7 +4,6 @@
  * and open the template in the editor.
  */
 
-
 import java.io.*;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -23,10 +22,12 @@ public class Main {
     public static Socket connection;
     public static InputStream inputStream;
     public static OutputStream outputStream;
-    public static String username, group, file;
-    public static LoginForm loginForm = new LoginForm();
-    public static GroupPanel groupPanel = new GroupPanel();
+    public static String user, group, file, username;
+    public static LoginForm loginForm;
+    public static GroupPanel groupPanel;
     public static Map<String, GroupChat> groupChats = new HashMap<>();
+    public static Map<String, UserChat> userChats = new HashMap<>();
+    public static int posX = 0, posY = 0;
 
     public static void init() throws IOException {
         connection = new Socket(HOST_NAME, SERVER_PORT);
@@ -63,58 +64,53 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    public static void newLocation() {
+        posX += 20;
+        if(posX >= 1000) posX = 0;
+        posY += 20;
+        if(posY >= 700) posY = 0;
+    }
 
     public static void login(String u) {
         username = u;
         write("Login [" + u + "]");
+        groupPanel.setTitle("Logged in as: " + username);
     }
-
-    public static void getGroups() {
-        write("Groups");
+    
+    //User functions
+    public static void getUsers() {
+        write("Users");
     }
-
-    public static void createGroup(String g) {
-        group = g;
-        write("Create [" + g + "]");
-    }
-
-    public static void joinGroup(String g) {
-        group = g;
-        write("Join [" + g + "]");
-    }
-
-    public static void openGroup(String g) {
-        if (groupChats.get(g) == null) {
-            groupChats.put(g, new GroupChat(g));
+    public static void openUser(String u) {
+        if (userChats.get(u) == null) {
+            userChats.put(u, new UserChat(u));
         }
-        groupChats.get(g).setVisible(true);
+        userChats.get(u).setVisible(true);
     }
-
-    public static void leaveGroup(String g) {
-        write("Leave [" + g + "]");
-        groupChats.remove(group);
+    public static void leaveUser(String u) {
+        userChats.remove(u);
     }
-
-    public static void chatGroup(String g, String m) {
-        write("GText [" + g + "] " + m);
+    public static void chatUser(String u, String m) {
+        write("UText [" + u + "] " + m);
+        userChats.get(u).updateChat(120, username, m);
     }
-
-    public static void toGroup(int c, String m) {
+    public static void toUser(int c, String m) {
         int pos = m.indexOf("]");
-        String g = m.substring(1, pos);
-        m = m.substring(pos + 2);
         pos = m.indexOf("]");
         String u = m.substring(1, pos);
         m = m.substring(pos + 2);
-        if (groupChats.get(g) != null) {
-            groupChats.get(g).updateChat(c, u, m);
-        }
+        openUser(u);
+        userChats.get(u).updateChat(c, u, m);
     }
-    
-    public static void fileGroup(String g, File file) {
+    public static void filelistUser(String u) {
+        user = u;
+        write("UFile " + u);
+    }
+    public static void fileUser(String u, File file) {
         FileInputStream stream = null;
         try {
-            write("GFile [" + g + "] [" + file.getName() + "] " + file.length());
+            write("UPut [" + u + "] [" + file.getName() + "] " + file.length());
             stream = new FileInputStream(file);
             byte[] buffer = new byte[1024];
             DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
@@ -135,7 +131,74 @@ public class Main {
             }
         }
     }
+    public static void downloadUser(String u, String f) {
+        file = f;
+        write("UGet [" + u + "] [" + f + "]");
+    }
     
+    // Group functions
+    public static void getGroups() {
+        write("Groups");
+    }
+    public static void createGroup(String g) {
+        group = g;
+        write("Create [" + g + "]");
+    }
+    public static void joinGroup(String g) {
+        group = g;
+        write("Join [" + g + "]");
+    }
+    public static void openGroup(String g) {
+        if (groupChats.get(g) == null) {
+            groupChats.put(g, new GroupChat(g));
+        }
+        groupChats.get(g).setVisible(true);
+    }
+    public static void leaveGroup(String g) {
+        write("Leave [" + g + "]");
+        groupChats.remove(g);
+    }
+    public static void chatGroup(String g, String m) {
+        write("GText [" + g + "] " + m);
+    }
+    public static void toGroup(int c, String m) {
+        int pos = m.indexOf("]");
+        String g = m.substring(1, pos);
+        m = m.substring(pos + 2);
+        pos = m.indexOf("]");
+        String u = m.substring(1, pos);
+        m = m.substring(pos + 2);
+        openGroup(g);
+        groupChats.get(g).updateChat(c, u, m);
+    }
+    public static void filelistGroup(String g) {
+        group = g;
+        write("GFile " + g);
+    }
+    public static void fileGroup(String g, File file) {
+        FileInputStream stream = null;
+        try {
+            write("GPut [" + g + "] [" + file.getName() + "] " + file.length());
+            stream = new FileInputStream(file);
+            byte[] buffer = new byte[1024];
+            DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+            int n = 0;
+            while ((n = stream.read(buffer)) > 0) {
+                dataOutputStream.write(buffer, 0, n);
+            }
+            stream.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                stream.close();
+            } catch (IOException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
     public static void downloadGroup(String g, String f) {
         file = f;
         write("GGet [" + g + "] [" + f + "]");
@@ -148,10 +211,12 @@ public class Main {
     public static void main(String[] args) throws IOException {
         init();
         try {
-            javax.swing.UIManager.setLookAndFeel(javax.swing.UIManager.getSystemLookAndFeelClassName());
+            javax.swing.UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatIntelliJLaf());
         } catch (Exception ex) {
             Logger.getLogger(LoginForm.class.getName()).log(Level.SEVERE, null, ex);
         }
+        loginForm = new LoginForm();
+        groupPanel = new GroupPanel();
         loginForm.setVisible(true);
     }
 
