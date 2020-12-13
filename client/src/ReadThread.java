@@ -28,22 +28,22 @@ public class ReadThread extends Thread {
                 if (stringIn.length() > 4) {
                     message = stringIn.substring(4);
                 }
+                System.out.println(message);
                 if (message.equals("You haven't log in yet")) {
                     Main.loginForm.setVisible(true);
                     Main.groupPanel.setVisible(false);
                     javax.swing.JOptionPane.showMessageDialog(Main.loginForm, message);
                 } else if (message.equals("You have already joined")) {
                     Main.openGroup(Main.group);
-                } else if (code == 210) {
+                } else if (code == 210 || message.equals("You have already logged in")) {
                     Main.loginForm.setVisible(false);
                     Main.groupPanel.setVisible(true);
                     Main.getUsers();
                     Main.getGroups();
-                } else if (code == 211) {
-                    Main.loginForm.setVisible(true);
-                    Main.groupPanel.setVisible(false);
                 } else if (code == 120 || code == 121) {
                     Main.toUser(code, message);
+                } else if (code == 221) {
+                    Main.filelistUser(Main.user);
                 } else if (code == 230) {
                     Main.getGroups();
                     Main.openGroup(Main.group);
@@ -51,6 +51,8 @@ public class ReadThread extends Thread {
                     Main.openGroup(Main.group);
                 } else if (code == 131 || code == 132 || code == 133 || code == 134) {
                     Main.toGroup(code, message);
+                } else if (code == 234) {
+                    Main.filelistGroup(Main.group);
                 } else if (code == 235 || code == 222) {
                     File file = new File(Main.file);
                     if (!file.createNewFile()) {
@@ -70,13 +72,11 @@ public class ReadThread extends Thread {
                 } else if (code == 241) {
                     Main.groupPanel.setGroups(message.split("/"));
                 } else if (code == 240) {
-                    Main.groupPanel.setUsers(message.split("/"));
+                    Main.setUsers(message.split("/"));
                 } else if (code == 242) {
-                    DownloadDialog dd = new DownloadDialog(null, false, Main.user, null, message.split("/"));
-                    dd.setVisible(true);
+                    Main.setFilesUser(Main.user, message.split("/"));
                 } else if (code == 243) {
-                    DownloadDialog dd = new DownloadDialog(null, false, null, Main.group, message.split("/"));
-                    dd.setVisible(true);
+                    Main.setFilesGroup(Main.group, message.split("/"));
                 }
             }
         } catch (IOException e) {

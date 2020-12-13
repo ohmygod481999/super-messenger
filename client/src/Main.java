@@ -27,7 +27,7 @@ public class Main {
     public static GroupPanel groupPanel;
     public static Map<String, GroupChat> groupChats = new HashMap<>();
     public static Map<String, UserChat> userChats = new HashMap<>();
-    public static int posX = 0, posY = 0;
+    public static int posX = 0, posY = 0, members = 0;
 
     public static void init() throws IOException {
         connection = new Socket(HOST_NAME, SERVER_PORT);
@@ -80,7 +80,14 @@ public class Main {
     
     //User functions
     public static void getUsers() {
+        members = 0;
         write("Users");
+    }
+    public static void setUsers(String[] users) {
+        if (members == 0)
+            groupPanel.setUsers(users);
+        else
+            groupChats.get(group).setMembers(users);
     }
     public static void openUser(String u) {
         if (userChats.get(u) == null) {
@@ -108,6 +115,7 @@ public class Main {
         write("UFile " + u);
     }
     public static void fileUser(String u, File file) {
+        user = u;
         FileInputStream stream = null;
         try {
             write("UPut [" + u + "] [" + file.getName() + "] " + file.length());
@@ -135,10 +143,25 @@ public class Main {
         file = f;
         write("UGet [" + u + "] [" + f + "]");
     }
+    public static void setFilesUser(String u, String[] files) {
+        if (userChats.get(u) != null) {
+            userChats.get(u).setFiles(files);
+        }
+    }
     
     // Group functions
     public static void getGroups() {
         write("Groups");
+    }
+    public static void getMembers(String g) {
+        members = 1;
+        group = g;
+        write("Users [" + g + "]");
+    }
+    public static void setMembers(String g, String[] members) {
+        if (groupChats.get(g) != null) {
+            groupChats.get(g).setMembers(members);
+        }
     }
     public static void createGroup(String g) {
         group = g;
@@ -176,6 +199,7 @@ public class Main {
         write("GFile " + g);
     }
     public static void fileGroup(String g, File file) {
+        group = g;
         FileInputStream stream = null;
         try {
             write("GPut [" + g + "] [" + file.getName() + "] " + file.length());
@@ -202,6 +226,11 @@ public class Main {
     public static void downloadGroup(String g, String f) {
         file = f;
         write("GGet [" + g + "] [" + f + "]");
+    }
+    public static void setFilesGroup(String g, String[] files) {
+        if (groupChats.get(g) != null) {
+            groupChats.get(g).setFiles(files);
+        }
     }
 
     public static void logout() {
