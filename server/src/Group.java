@@ -15,7 +15,9 @@ public class Group {
     }
 
     public void outGroup(Connection connection) {
-        this.connections.remove(connection.getId());
+        if (connections.remove(connection.getId()) != null) {
+            addWriter(new Writer.Text("132 [" + name + "] [" + connection.getId() + "] has left"));
+        }
     }
 
     public void addWriter(Writer writer) {

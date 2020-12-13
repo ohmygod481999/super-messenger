@@ -29,7 +29,6 @@ public class Main {
         File[] files = folder.listFiles();
         if (files != null) {
             for (File file : files) {
-                System.out.println(file.getName());
                 if (file.isDirectory()) {
                     deleteFolder(file);
                 }

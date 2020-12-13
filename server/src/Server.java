@@ -1,7 +1,24 @@
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 public class Server {
+
+    public static final Pattern PATTERN_LOGIN = Pattern.compile("^Login \\[(.*)]$");
+    public static final Pattern PATTERN_LOGOUT = Pattern.compile("^Logout$");
+    public static final Pattern PATTERN_UTEXT = Pattern.compile("^UText \\[(.*)] (.*)$");
+    public static final Pattern PATTERN_UFILE = Pattern.compile("^UFile (.*)$");
+    public static final Pattern PATTERN_UGET = Pattern.compile("^UGet \\[(.*)] \\[(.*)]$");
+    public static final Pattern PATTERN_CREATE = Pattern.compile("^Create \\[(.*)]$");
+    public static final Pattern PATTERN_JOIN = Pattern.compile("^Join \\[(.*)]$");
+    public static final Pattern PATTERN_LEAVE = Pattern.compile("^Leave \\[(.*)]$");
+    public static final Pattern PATTERN_GTEXT = Pattern.compile("^GText \\[(.*)] (.*)$");
+    public static final Pattern PATTERN_GFILE = Pattern.compile("^GFile (.*)$");
+    public static final Pattern PATTERN_GGET = Pattern.compile("^GGet \\[(.*)] \\[(.*)]$");
+    public static final Pattern PATTERN_USERS = Pattern.compile("^Users( \\[(.*)])?$");
+    public static final Pattern PATTERN_GROUPS = Pattern.compile("^Groups$");
+    public static final Pattern PATTERN_UPUT = Pattern.compile("^UPut \\[(.*)] \\[(.*)] (\\d*)$");
+    public static final Pattern PATTERN_GPUT = Pattern.compile("^GPut \\[(.*)] \\[(.*)] (\\d*)$");
 
     private static final ConcurrentHashMap<String, Connection> connections = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<String, Group> groups = new ConcurrentHashMap<>();
@@ -16,11 +33,12 @@ public class Server {
     }
 
     public static void removeConnection(String id) {
-        connections.remove(id);
-    }
-
-    public static void removeGroup(String id) {
-        groups.remove(id);
+        Connection connection = connections.remove(id);
+        if (connection != null) {
+            for (Group group : groups.values()) {
+                group.outGroup(connection);
+            }
+        }
     }
 
     public static Collection<Group> getGroups() {

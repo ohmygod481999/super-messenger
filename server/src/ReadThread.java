@@ -26,35 +26,35 @@ public class ReadThread extends Thread {
                 }
                 String readString = new String(buffer, 0, n, StandardCharsets.UTF_8).trim();
                 System.out.println("client: " + readString);
-                if ((matcher = CommandPattern.LOGIN.matcher(readString)).matches()) {
+                if ((matcher = Server.PATTERN_LOGIN.matcher(readString)).matches()) {
                     onLogin();
-                } else if ((matcher = CommandPattern.LOGOUT.matcher(readString)).matches()) {
+                } else if ((matcher = Server.PATTERN_LOGOUT.matcher(readString)).matches()) {
                     onLogout();
-                } else if ((matcher = CommandPattern.UTEXT.matcher(readString)).matches()) {
+                } else if ((matcher = Server.PATTERN_UTEXT.matcher(readString)).matches()) {
                     onUText();
-                } else if ((matcher = CommandPattern.UPUT.matcher(readString)).matches()) {
+                } else if ((matcher = Server.PATTERN_UPUT.matcher(readString)).matches()) {
                     onUPut();
-                } else if ((matcher = CommandPattern.UGET.matcher(readString)).matches()) {
+                } else if ((matcher = Server.PATTERN_UGET.matcher(readString)).matches()) {
                     onUGet();
-                } else if ((matcher = CommandPattern.CREATE.matcher(readString)).matches()) {
+                } else if ((matcher = Server.PATTERN_CREATE.matcher(readString)).matches()) {
                     onCreate();
-                } else if ((matcher = CommandPattern.JOIN.matcher(readString)).matches()) {
+                } else if ((matcher = Server.PATTERN_JOIN.matcher(readString)).matches()) {
                     onJoin();
-                } else if ((matcher = CommandPattern.LEAVE.matcher(readString)).matches()) {
+                } else if ((matcher = Server.PATTERN_LEAVE.matcher(readString)).matches()) {
                     onLeave();
-                } else if ((matcher = CommandPattern.GTEXT.matcher(readString)).matches()) {
+                } else if ((matcher = Server.PATTERN_GTEXT.matcher(readString)).matches()) {
                     onGText();
-                } else if ((matcher = CommandPattern.GPUT.matcher(readString)).matches()) {
+                } else if ((matcher = Server.PATTERN_GPUT.matcher(readString)).matches()) {
                     onGPut();
-                } else if ((matcher = CommandPattern.GGET.matcher(readString)).matches()) {
+                } else if ((matcher = Server.PATTERN_GGET.matcher(readString)).matches()) {
                     onGGet();
-                } else if ((matcher = CommandPattern.USERS.matcher(readString)).matches()) {
+                } else if ((matcher = Server.PATTERN_USERS.matcher(readString)).matches()) {
                     onUsers();
-                } else if ((matcher = CommandPattern.GROUPS.matcher(readString)).matches()) {
+                } else if ((matcher = Server.PATTERN_GROUPS.matcher(readString)).matches()) {
                     onGroups();
-                } else if ((matcher = CommandPattern.UFILE.matcher(readString)).matches()) {
+                } else if ((matcher = Server.PATTERN_UFILE.matcher(readString)).matches()) {
                     onUFile();
-                } else if ((matcher = CommandPattern.GFILE.matcher(readString)).matches()) {
+                } else if ((matcher = Server.PATTERN_GFILE.matcher(readString)).matches()) {
                     onGFile();
                 } else {
                     connection.addWriter(new Writer.Text("400 Invalid command"));
